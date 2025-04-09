@@ -98,15 +98,17 @@ class DevicesBloc {
   // }
 
   Future<void> _checkPermissions() async {
-    if (Platform.isAndroid) {
-      var locGranted = await Permission.location.isGranted;
-      if (locGranted == false) {
-        locGranted = (await Permission.location.request()).isGranted;
+    [
+      if (Platform.isAndroid) Permission.bluetoothConnect,
+      if (Platform.isAndroid) Permission.bluetoothScan,
+      if (Platform.isIOS) Permission.bluetooth,
+      Permission.location,
+    ].request().then((result) {
+      if (result.containsValue(PermissionStatus.denied)) {
+        return Future.error(Exception("Permission not granted"));
       }
-      if (locGranted == false) {
-        return Future.error(Exception("Location permission not granted"));
-      }
-    }
+      return result;
+    });
   }
 
   // Future<void> _waitForBluetoothPoweredOn() async {
